@@ -18,11 +18,12 @@ metadata {
 		capability "Switch Level"
 		capability "Refresh"
 		capability "Sensor"
-        capability "Configuration"
-        capability "Battery"
+		capability "Button"
+	        capability "Configuration"
+	        capability "Battery"
 
 		fingerprint deviceId: "0x1801", inClusters: "0x5E, 0x80, 0x85, 0x70, 0x72, 0x86, 0x84, 0x59, 0x73, 0x5A, 0x8F, 0x98, 0x7A, 0x5B", outClusters: "0x20"
-									
+
     }
 
 	simulator {
@@ -31,7 +32,7 @@ metadata {
 	}
 
 	tiles {
-    
+
     	multiAttributeTile(name:"button", type:"lighting", width:6, height:4) {
   			tileAttribute("device.button", key: "PRIMARY_CONTROL"){
     		attributeState "default", label:'Controller', backgroundColor:"#44b621", icon:"st.Home.home30"
@@ -75,12 +76,20 @@ def parse(String description) {
 }
 
 def updated() {
+	configure()
 	response(zwave.wakeUpV1.wakeUpNoMoreInformation())
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.wakeupv1.WakeUpNotification cmd) {
-	[ createEvent(descriptionText: "${device.displayName} woke up"),
-	  response(zwave.wakeUpV1.wakeUpNoMoreInformation()) ]
+	def result = [createEvent(descriptionText: "${device.displayName} woke up", isStateChange: false)]
+
+        // Only ask for battery if we haven't had a BatteryReport in a while
+        if (!state.lastbatt || (new Date().time) - state.lastbatt > 24*60*60*1000) {
+                result << response(zwave.batteryV1.batteryGet())
+                result << response("delay 1200")  // leave time for device to respond to batteryGet
+        }
+        result << response(zwave.wakeUpV1.wakeUpNoMoreInformation())
+        result
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd) {
@@ -109,7 +118,8 @@ def zwaveEvent(physicalgraph.zwave.commands.batteryv1.BatteryReport cmd) {
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulation cmd) {
-	def encapsulatedCommand = cmd.encapsulatedCommand([0x20: 1, 0x84: 1])
+	log.debug("cmd: $cmd")
+	def encapsulatedCommand = cmd.encapsulatedCommand([0x70: 1, 0x86: 1])
 	if (encapsulatedCommand) {
 		state.sec = 1
 		def result = zwaveEvent(encapsulatedCommand)
@@ -125,15 +135,15 @@ def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulat
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.centralscenev1.CentralSceneNotification cmd) {
-		log.debug( "keyAttributes: $cmd.keyAttributes")
+	log.debug( "keyAttributes: $cmd.keyAttributes")
         log.debug( "sceneNumber: $cmd.sceneNumber")
         log.debug( "sequenceNumber: $cmd.sequenceNumber")
         if ( cmd.sceneNumber == 1 ) {
         	Integer button = 1
-            sendEvent(name: "button", value: "pushed", data: [buttonNumber: button], descriptionText: "$device.displayName button $button was pushed", isStateChange: true)
-            log.debug( "Button $button was pushed" )
-            }
-      // 	log.debug( "payload: $cmd.payload")
+    		sendEvent(name: "button", value: "pushed", data: [buttonNumber: button], descriptionText: "$device.displayName button $button was pushed", isStateChange: true)
+		log.debug( "Button $button was pushed" )
+    	}
+       	log.debug( "payload: $cmd.payload")
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicSet cmd) {
@@ -156,7 +166,7 @@ def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicSet cmd) {
       // 	log.debug( "payload: $cmd.payload")
 }
 
- 
+
 
 def zwaveEvent(physicalgraph.zwave.commands.crc16encapv1.Crc16Encap cmd) {
 	def versions = [0x31: 2, 0x30: 1, 0x84: 1, 0x9C: 1, 0x70: 2]
@@ -182,7 +192,8 @@ def off() {
 }
 
 def refresh() {
-	command(zwave.basicV1.basicGet())
+	commands([zwave.basicV1.basicGet().format(), zwave.batteryV1.batteryGet().format()], 2500)
+
 }
 
 def setLevel(value) {
@@ -201,15 +212,12 @@ private commands(commands, delay=200) {
 	delayBetween(commands.collect{ command(it) }, delay)
 }
 
-  def configure() {
-    
- 
-    def commands = [ ]
-			log.debug "Resetting Sensor Parameters to SmartThings Compatible Defaults"
+def configure() {
+	def commands = [ ]
+	log.debug "Resetting Sensor Parameters to SmartThings Compatible Defaults"
 	def cmds = []
-    cmds << zwave.associationV1.associationSet(groupingIdentifier: 1, nodeId: zwaveHubNodeId).format()
-    cmds << zwave.associationV1.associationSet(groupingIdentifier: 2, nodeId: zwaveHubNodeId).format()
-    cmds << zwave.configurationV1.configurationSet(configurationValue: [10], parameterNumber: 10, size: 1).format()
-    
-    delayBetween(cmds, 500)
+	cmds << zwave.associationV1.associationSet(groupingIdentifier: 1, nodeId: zwaveHubNodeId).format()
+	cmds << zwave.associationV1.associationSet(groupingIdentifier: 2, nodeId: zwaveHubNodeId).format()
+	cmds << zwave.configurationV1.configurationSet(configurationValue: [10], parameterNumber: 10, size: 1).format()
+	delayBetween(cmds, 2500)
 }
