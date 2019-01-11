@@ -1,0 +1,20 @@
+3.33.38: warn Exception 'java.lang.NullPointerException: Cannot invoke method parse() on null object' encountered parsing 'cmd: 5E02, payload: 01 04 00 16 00 16 00'
+debug This is what I receive: zw device: 17, command: 5E02, payload: 01 04 00 16 00 16 00
+        ZWAVEPLUS_INFO_REPORT 0x02
+                01 = Z-Wave Plus Version
+                4 = ReportRole type
+                0 = Node type
+                16 = Installer Icon Type MSB
+                0 = Installer Icon Type LSB
+                16 = User Icon Type MSB
+                0 = User Icon Type LSB
+
+
+debug This is what I receive: zw device: 17, command: 7205, payload: 01 3C 00 09 00 22
+        MANUFACTURER_SPECIFIC_REPORT 0x05
+
+debug This is what I receive: zw device: 17, command: 5906, payload: 02 02 20 01
+         ASSOCIATION_GROUP_COMMAND_LIST_REPORT
+
+cmd: SecurityMessageEncapsulation(secondFrame: false, commandIdentifier: 7, commandClassIdentifier: 132, commandByte: [], sequenceCounter: 0, sequenced: false, reserved13: 0)
+         WAKE_UP_NOTIFICATION_V2

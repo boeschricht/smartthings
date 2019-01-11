@@ -191,31 +191,17 @@ def off() {
 }
 
 def refresh() {
-	log.debug("her1")
-	commands([zwave.basicV1.basicGet().format(),
-		zwave.batteryV1.batteryGet().format(),
-		zwave.configurationV1.configurationSet(configurationValue: [10], parameterNumber: 10, size: 1).format(),
-		zwave.configurationV1.configurationSet(configurationValue: [2], parameterNumber: 25, size: 1).format()
-	], 2500)
-	delayBetween([
-		zwave.configurationV1.configurationSet(configurationValue: [10], parameterNumber: 10, size: 1).format(),
-		zwave.configurationV1.configurationSet(configurationValue: [2], parameterNumber: 25, size: 1).format()
-		])
+	commands([zwave.basicV1.basicGet().format(), zwave.batteryV1.batteryGet().format()], 2500)
 
 }
 
 def configure() {
-		delayBetween([
-			zwave.associationV2.associationSet(groupingIdentifier: 1, nodeId: zwaveHubNodeId).format(),
-			zwave.associationV2.associationSet(groupingIdentifier: 2, nodeId: zwaveHubNodeId).format(),
-			zwave.configurationV1.configurationSet(configurationValue: [10], parameterNumber: 10, size: 1).format(),
-			zwave.configurationV1.configurationSet(configurationValue: [2], parameterNumber: 25, size: 1).format()
-	        ])
+	commands([zwave.associationV1.associationSet(groupingIdentifier: 1, nodeId: zwaveHubNodeId).format(),
+		zwave.associationV1.associationSet(groupingIdentifier: 2, nodeId: zwaveHubNodeId).format(),
+		zwave.configurationV1.configurationSet(configurationValue: [10], parameterNumber: 10, size: 1).format()], 2000)
 }
 
 def updated() {
-	log.debug("her2")
-	commands([zwave.basicV1.basicGet().format(), zwave.batteryV1.batteryGet().format()], 2500)
 }
 
 def setLevel(value) {
@@ -240,7 +226,7 @@ private command(physicalgraph.zwave.Command cmd) {
 	}
 }
 
-private commands(commands, delay=2000) {
+private commands(commands, delay=200) {
 	delayBetween(commands.collect{ command(it) }, delay)
 }
 
