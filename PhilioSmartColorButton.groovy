@@ -22,7 +22,7 @@ metadata {
 	        capability "Configuration"
 	        capability "Battery"
 
-		fingerprint deviceId: "0x1801", inClusters: "0x5E, 0x80, 0x85, 0x70, 0x72, 0x86, 0x84, 0x59, 0x73, 0x5A, 0x8F, 0x98, 0x7A, 0x5B", outClusters: "0x20"
+		fingerprint type: "1801", mfr: "013C", prod: "0009", model: "0022"
 
     }
 
@@ -208,8 +208,9 @@ def configure() {
 		delayBetween([
 			zwave.associationV2.associationSet(groupingIdentifier: 1, nodeId: zwaveHubNodeId).format(),
 			zwave.associationV2.associationSet(groupingIdentifier: 2, nodeId: zwaveHubNodeId).format(),
-			zwave.configurationV1.configurationSet(configurationValue: [10], parameterNumber: 10, size: 1).format(),
-			zwave.configurationV1.configurationSet(configurationValue: [2], parameterNumber: 25, size: 1).format()
+			// xxx fjernet liste [] rundt om værdier
+			zwave.configurationV1.configurationSet(configurationValue: 10, parameterNumber: 10, size: 1).format(),
+			zwave.configurationV1.configurationSet(configurationValue: 2, parameterNumber: 25, size: 1).format()
 	        ])
 }
 
