@@ -206,11 +206,11 @@ def refresh() {
 
 def configure() {
 		delayBetween([
-			zwave.associationV2.associationSet(groupingIdentifier: 1, nodeId: zwaveHubNodeId).format(),
-			zwave.associationV2.associationSet(groupingIdentifier: 2, nodeId: zwaveHubNodeId).format(),
-			// xxx fjernet liste [] rundt om værdier
-			zwave.configurationV1.configurationSet(configurationValue: 10, parameterNumber: 10, size: 1).format(),
-			zwave.configurationV1.configurationSet(configurationValue: 2, parameterNumber: 25, size: 1).format()
+			zwave.associationV2.associationSet(groupingIdentifier: 1, nodeId: [zwaveHubNodeId]).format(),
+			zwave.associationV2.associationSet(groupingIdentifier: 2, nodeId: [zwaveHubNodeId]).format(),
+			zwave.associationV2.associationSet(groupingIdentifier: 2, nodeId: [zwaveHubNodeId]).format(),
+			zwave.configurationV1.configurationSet(configurationValue: [10], parameterNumber: 10, size: 1).format(),
+			zwave.configurationV1.configurationSet(configurationValue: [2], parameterNumber: 25, size: 1).format()
 	        ])
 }
 
